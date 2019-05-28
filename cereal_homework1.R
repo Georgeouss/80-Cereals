@@ -2,6 +2,8 @@
 # Georgi Burgazliev, fn: 71781, IS, group 1
 # Simeon Yachev, fn: 71824, IS, group 1
 
+library(UsingR)
+
 #maker sure the file is in the working directory
 getwd()
 
@@ -19,7 +21,7 @@ class(cereal.dataset)
 #get the same sequence
 set.seed(71781)
 
-#this function extract sample of 50 integers out of the hole dataset
+#this function extract sample of 50 integers out of the whole dataset
 cereal.sample.int = sample(1: nrow(cereal.dataset), 50, replace = FALSE)
 
 #random sample of 50 rows of the original data frame "cereal.dataset"
@@ -72,9 +74,10 @@ barplot(table(mfr),
         ylab = "Quantity")
 
 #all manifacturers produce cereals of type C except A
-barplot(table(type ,mfr),col = c("navy","purple"),main = "Productions of mfrs")
+barplot(table(type ,mfr),col = c("navy","purple"),main = "Productions of mfrs",legend.text = T)
 
 #it shows that most of the cereals are rated between 35-40 % and less after 60 %
+#the probability of the cereal to be 30-40  rated is high and above 60 - less
 hist(rating,probability = TRUE )
 lines(density(rating),col="red")
 rug(jitter(rating))
@@ -88,7 +91,32 @@ boxplot(calories~mfr)
 plot(cereal.dataset.sample)
 #low sugar cereals are highly rated
 plot(sugars,rating)
-abline(lm(sugars~rating))
+#regression line 2way
+simple.lm(sugars,rating)
+abline(lm(rating~sugars))
+abline(rlm(rating~sugars),lty=4)
 #the corelation
 cor(sugars,rating)
+#find index of the closest (x, y) coordinates to the mouse click
+identify(sugars,rating,n=2)
+
+
+#numeric to categorical for calories
+calories.categories = cut(calories,breaks = c(min(calories),quantile(calories,.25),
+                                  quantile(calories,.75),max(calories)))
+levels(calories.categories) = c("low cal","medium cal","high cal");
+barplot(table(calories.categories),col = c("red","green","blue"))
+
+#you can't buy hight in carbo and high in cal cereal , there is no straight dependency
+carbo.categories = cut(carbo,breaks = c(min(carbo),quantile(carbo,.25),quantile(carbo,.75),max(carbo)))
+
+levels(carbo.categories) = c("low carbo","medium carbo","high carbo");
+barplot(table(calories.categories,carbo.categories),col = c("red","green","blue"),beside = TRUE,legend.text = T)
+
+#plot both a histogram and a boxplot to show the relationship between the two graphs
+simple.hist.and.boxplot(sodium)
+
+   
+boxplot(scale(sugars),scale(carbo))
+simple.violinplot(scale(protein),scale(fat))
 
