@@ -84,7 +84,6 @@ barplot(table(type ,mfr),col = c("navy","purple"),main = "Productions of mfrs",l
 
 #it shows that most of the cereals are rated between 35-40 % and less after 60 %
 #the probability of the cereal to be 30-40  rated is high and above 60 - less
-#rating - normal distribution
 hist(rating,probability = TRUE )
 lines(density(rating),col="red")
 rug(jitter(rating))
@@ -300,7 +299,7 @@ z = (carbo.mean - mu0)/(carbo.sd/sqrt(carbo.length))
 #we do not reject the null hypothesis that ?? ??? 30.
 pnorm(z) > 0.05
 
-#Manifacturars claims that there are at most 100 calories/100 gr in a cereal. 
+#Manifacturars claims that there are at most 100 calories per serving in a cereal. 
 #In a sample of 50 cereals, it is found that the mean amount of calories in a cereal
 #is 107.2 cals. Assume that the population standard deviation is 21.76 grams. 
 #At .05 significance level, can we reject the claim by the mfrs?
@@ -323,3 +322,13 @@ pnorm(cal.z, lower.tail=FALSE) < 0.05
 #p-value of the test statistic. As it turns out to be greater than the .05 
 #significance level, we do not reject the null hypothesis that p ??? 0.5
 prop.test(21,cal.length, p=.5, alt="less", correct=FALSE)
+
+#p-value  is greater than the .05 significance level, we do not reject 
+#the null hypothesis that the calories are independent of the carbos
+tbl = table(calories.categories,carbo.categories)
+chisq.test(tbl)
+
+#p-value  is greater than the .05 significance level, we reject 
+#the null hypothesis that the type is independent of the mfr
+chi = chisq.test(table(type,mfr))
+chi$p.value < 0.05
