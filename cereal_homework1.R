@@ -123,6 +123,9 @@ calories.categories = cut(calories,breaks = c(min(calories)-1,quantile(calories,
                                   quantile(calories,.75),max(calories)))
 #the probability of getting low , medium and high in cal cereal
 prop.table(table(calories.categories))
+medium.cal.prob = prop.table(table(calories.categories))[2]
+medium.cal.prob
+prop.test(20,length(calories),medium.cal.prob)
 
 levels(calories.categories) = c("low cal","medium cal","high cal");
 barplot(table(calories.categories),col = c("red","green","blue"))
@@ -145,55 +148,95 @@ simple.violinplot(scale(protein),scale(fat))
 #binomial distribution , the probabilty to select half of the low in calories cereals
 dbinom(25,50,0.42)
 
-#normal distribution , the percentage of cereals that contains protein)
-pnorm(0, mean(protein), sd(protein), lower.tail=FALSE) 
+#normal distribution , the percentage of cereals that contains more than 100cal)
+pnorm(100, mean(calories), sd(calories), lower.tail=FALSE) 
+
+library(fitdistrplus)
+library(logspline)
+install.packages("logspline")
+install.packages("fitdistrplus")
+
+#use the functiondescdist to gain some ideas about possible candidate distributions.
+descdist(potass, discrete = TRUE)
+#comparisson
+fit.nbinom = fitdist(potass, "nbinom")
+fit.pois = fitdist(potass, "pois")
+plot(fit.nbinom)
+plot(fit.pois)
+#potass is more likely to be negative binom
+hist(potass,probability = TRUE)
+lines(density(potass),col="red")
+rug(jitter(potass))
 
 #normal distribution
+descdist(calories, discrete = TRUE)
 hist(calories,probability = TRUE)
 lines(density(calories),col="red")
 rug(jitter(calories))
 
-#F Distribution (?)
+#Negative binomial
+descdist(fat, discrete = TRUE)
+fat.fit.nbinom = fitdist(fat, "nbinom")
+plot(fat.fit.nbinom)
 hist(fat,probability = TRUE)
 lines(density(fat),col="red")
 rug(jitter(fat))
 
-#exponential distribution
-hist(protein,probability = TRUE)
-lines(density(protein),col="red")
-rug(jitter(protein))
-
+#(?)
+descdist(protein, discrete = TRUE)
+shapiro.test(protein)
+protein.fit.pois = fitdist(protein, "pois")
+plot(protein.fit.pois)
+#(?)
+shapiro.test(fiber)
+descdist(fiber, discrete = TRUE)
+plot(fiber.fit.nbinom)
 hist(fiber,probability = TRUE)
 lines(density(fiber),col="red")
 rug(jitter(fiber))
 #norm distribution(?)
+descdist(sodium, discrete = TRUE)
+sodium.fit.norm = fitdist(sodium, "norm")
+plot(sodium.fit.norm)
 hist(sodium,probability = TRUE)
 lines(density(sodium),col="red")
 rug(jitter(sodium))
 #normal ditribution
+descdist(carbo, discrete = TRUE)
+carbo.fit.norm = fitdist(carbo, "norm")
+plot(carbo.fit.norm)
 hist(carbo,probability = TRUE)
 lines(density(carbo),col="red")
 rug(jitter(carbo))
-#continuous uniform distribution (?)
+#norm(?)
+descdist(sugars, discrete = TRUE)
+sugars.fit.norm = fitdist(sugars, "norm")
+plot(sugars.fit.norm)
 hist(sugars,probability = TRUE)
+shapiro.test(sugars)
 lines(density(sugars),col="red")
 rug(jitter(sugars))
-#F Distribution (?)
-hist(potass,probability = TRUE)
-lines(density(potass),col="red")
-rug(jitter(potass))
-#F Distribution(?)
+#poisson
+descdist(vitamins, discrete = TRUE)
+vitamins.fit.pois = fitdist(vitamins, "pois")
+plot(vitamins.fit.pois)
 hist(vitamins,probability = TRUE)
 lines(density(vitamins),col="red")
 rug(jitter(vitamins))
-#normal distribution
+#normal distribution(?)
+descdist(weight, discrete = TRUE)
 hist(weight,probability = TRUE)
 lines(density(weight),col="red")
 rug(jitter(weight))
-#//
+#norm(?)
+descdist(cups, discrete = TRUE)
 hist(cups,probability = TRUE)
 lines(density(cups),col="red")
 rug(jitter(cups))
+#rating weibull(?)
+descdist(rating, discrete = FALSE)
+rating.fit.weibull = fitdist(carbo, "weibull")
+plot(rating.fit.weibull)
 
 #find approximate q1 of calories
 qnorm(p=.25,mean(calories),sd(calories),lower.tail = TRUE)
@@ -211,7 +254,6 @@ cat("confidence interval for carbo:", carbo.avg - error, "-",
 
 #The 95% confidence interval of the mean carbo for sugar = 10
 predict(lm(carbo~sugars),data.frame(sugars=10),interval = "confidence")
-predict(eruption.lm, newdata, interval="confidence")
 
 #mean an confidence interval for fat 
 plot(fat,sodium)
@@ -240,3 +282,44 @@ points(x=fat.values,y=sample_mean,col="red" , cex= 2)
 #add ci
 segments(x0=fat.values,x1=fat.values, y0= cis[,1],y1 =cis[,2],
          col = "red" , lwd = 2)
+
+#The p-value reports how likely we are to see this data
+
+#the manufacturers claims that the mean carbos of a cereal are more than 15
+#In a sample of 50 cereals, it was found that they have 14.51 hours on average.
+#Assume the population standard deviation is 3.9. At .05 significance level, 
+#can we reject the claim by the manufacturers?
+carbo.mean = mean(carbo) 
+carbo.sd = sd(carbo)
+#The null hypothesis is that ?? ??? 30. We begin with computing the test statistic.
+mu0 = 15 #hypothesis value
+carbo.length = length(carbo)
+z = (carbo.mean - mu0)/(carbo.sd/sqrt(carbo.length)) 
+#We apply the pnorm function to compute the lower tail p-value of the test statistic.
+#As it turns out to be higher than the .05 significance level,
+#we do not reject the null hypothesis that ?? ??? 30.
+pnorm(z) > 0.05
+
+#Manifacturars claims that there are at most 100 calories/100 gr in a cereal. 
+#In a sample of 50 cereals, it is found that the mean amount of calories in a cereal
+#is 107.2 cals. Assume that the population standard deviation is 21.76 grams. 
+#At .05 significance level, can we reject the claim by the mfrs?
+cal.mean = mean(calories)
+cal.sd = sd(calories)
+#The null hypothesis is that ?? ??? 100
+cal.mu0 = 100 ; # hypothesized value
+cal.length = length(calories)
+cal.z = (cal.mean - cal.mu0)/(cal.sd/sqrt(cal.length))
+#we apply the pnorm function to compute the upper tail p-value of the test statistic.
+#As it turns out to be less than the .05 significance level, 
+#we reject the null hypothesis that ?? ??? 100.
+pnorm(cal.z, lower.tail=FALSE) < 0.05
+
+#21 out of 50 cereals are low in calories. At 0.5 significance level, 
+#can we reject the null hypothesis that the proportion of low in calories cereals
+#in the population is above 50% ?
+#-----------------------------------
+#The null hypothesis is that p ??? 0.5
+#p-value of the test statistic. As it turns out to be greater than the .05 
+#significance level, we do not reject the null hypothesis that p ??? 0.5
+prop.test(21,cal.length, p=.5, alt="less", correct=FALSE)
