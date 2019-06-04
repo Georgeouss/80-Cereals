@@ -34,7 +34,6 @@ attach(cereal.dataset.sample)
 cereal.dataset.sample = cereal.dataset.sample[complete.cases(cereal.dataset.sample), ]
 cereal.dataset.sample = cereal.dataset.sample[fat>=0 & calories >=0 & sodium >=0 & carbo>=0
                                               & fiber>=0 & sugars >=0 & potass>=0 ,]
-
 #Categorical data (quality) - name, mfr, type , shelf
 #Numerical data (quantity)       
 #calories - discrete
@@ -98,15 +97,6 @@ plot(cereal.dataset.sample)
 
 #low sugar cereals are highly rated
 plot(sugars,rating)
-#the cereals with the greatest rating (light blue) have the lowest sugar and calorie content!!
-library(ggplot2)
-ggplot(data=cereal.dataset.sample,aes(x=sugars,y=calories,col=rating))+
-  geom_jitter(data=cereal.dataset.sample, aes(sugars,calories,col=rating))+
-  labs(x="Sugar",y="Calories")+
-  geom_smooth(method="lm",se=FALSE,col='black')+
-  theme_bw()
-
-
 #regression line 2way
 simple.lm(sugars,rating)
 abline(lm(rating~sugars))
@@ -116,10 +106,17 @@ cor(sugars,rating)
 #find index of the closest (x, y) coordinates to the mouse click
 identify(sugars,rating,n=2)
 
+#the cereals with the greatest rating (light blue) have the lowest sugar and calorie content!!
+library(ggplot2)
+ggplot(data=cereal.dataset.sample,aes(x=sugars,y=calories,col=rating))+
+  geom_jitter(data=cereal.dataset.sample, aes(sugars,calories,col=rating))+
+  labs(x="Sugar",y="Calories")+
+  geom_smooth(method="lm",se=FALSE,col='black')+
+  theme_bw()
 
 #numeric to categorical for calories
 calories.categories = cut(calories,breaks = c(min(calories)-1,quantile(calories,.25),
-                                  quantile(calories,.75),max(calories)))
+                                              quantile(calories,.75),max(calories)))
 #the probability of getting low , medium and high in cal cereal
 prop.table(table(calories.categories))
 medium.cal.prob = prop.table(table(calories.categories))[2]
@@ -137,12 +134,11 @@ barplot(table(calories.categories,carbo.categories),col = c("red","green","blue"
 
 #plot both a histogram and a boxplot to show the relationship between the two graphs
 simple.hist.and.boxplot(sodium)
-boxplot(scale(sugars),scale(carbo))
+boxplot(scale(sugars),scale(carbo)) --
 
 # compares densities by creating violin plots. These are similar to boxplots, 
-# only instead of a box, the density is drawn with it�s mirror image.
-simple.violinplot(scale(protein),scale(fat))
-
+# only instead of a box, the density is drawn with it’s mirror image.
+simple.violinplot(scale(protein),scale(fat)) --
 
 #binomial distribution , the probabilty to select half of the low in calories cereals
 dbinom(25,50,0.42)
@@ -285,18 +281,18 @@ segments(x0=fat.values,x1=fat.values, y0= cis[,1],y1 =cis[,2],
 #The p-value reports how likely we are to see this data
 
 #the manufacturers claims that the mean carbos of a cereal are more than 15
-#In a sample of 50 cereals, it was found that they have 14.51 hours on average.
+#In a sample of 50 cereals, it was found that they have 14.51 on average.
 #Assume the population standard deviation is 3.9. At .05 significance level, 
 #can we reject the claim by the manufacturers?
 carbo.mean = mean(carbo) 
 carbo.sd = sd(carbo)
-#The null hypothesis is that ?? ??? 30. We begin with computing the test statistic.
+#The null hypothesis is that μ ≥ 30. We begin with computing the test statistic.
 mu0 = 15 #hypothesis value
 carbo.length = length(carbo)
 z = (carbo.mean - mu0)/(carbo.sd/sqrt(carbo.length)) 
 #We apply the pnorm function to compute the lower tail p-value of the test statistic.
 #As it turns out to be higher than the .05 significance level,
-#we do not reject the null hypothesis that ?? ??? 30.
+#we do not reject the null hypothesis that μ ≥ 30.
 pnorm(z) > 0.05
 
 #Manifacturars claims that there are at most 100 calories per serving in a cereal. 
@@ -305,22 +301,22 @@ pnorm(z) > 0.05
 #At .05 significance level, can we reject the claim by the mfrs?
 cal.mean = mean(calories)
 cal.sd = sd(calories)
-#The null hypothesis is that ?? ??? 100
+#The null hypothesis is that μ ≤ 100
 cal.mu0 = 100 ; # hypothesized value
 cal.length = length(calories)
 cal.z = (cal.mean - cal.mu0)/(cal.sd/sqrt(cal.length))
 #we apply the pnorm function to compute the upper tail p-value of the test statistic.
 #As it turns out to be less than the .05 significance level, 
-#we reject the null hypothesis that ?? ??? 100.
+#we reject the null hypothesis that μ ≤ 100.
 pnorm(cal.z, lower.tail=FALSE) < 0.05
 
 #21 out of 50 cereals are low in calories. At 0.5 significance level, 
 #can we reject the null hypothesis that the proportion of low in calories cereals
 #in the population is above 50% ?
 #-----------------------------------
-#The null hypothesis is that p ??? 0.5
+#The null hypothesis is that p ≥ 0.5
 #p-value of the test statistic. As it turns out to be greater than the .05 
-#significance level, we do not reject the null hypothesis that p ??? 0.5
+#significance level, we do not reject the null hypothesis that p ≥ 0.5
 prop.test(21,cal.length, p=.5, alt="less", correct=FALSE)
 
 #p-value  is greater than the .05 significance level, we do not reject 
